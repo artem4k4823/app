@@ -4,6 +4,7 @@ from pydantic import EmailStr
 from sqlalchemy import String
 
 class User(Base):
+    __tablename__ = 'users'
     username: Mapped[str] = mapped_column(nullable=False, unique=True)
-    email: Mapped[EmailStr] = mapped_column(nullable=False)
+    
     password: Mapped[str] = mapped_column(nullable=False)

@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from core.config import settings
-
+DATABASE_URL = "postgresql+asyncpg://username:password@localhost:5433/shop"
 class DataBase:
     def __init__(self, url:str):
         self.engine = create_async_engine(
-            url = url
+            url = DATABASE_URL
         )
 
         self.session_factory = async_sessionmaker(
