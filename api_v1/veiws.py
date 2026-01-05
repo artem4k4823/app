@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from app.core.database import db
-from app.crud.user import get_all_users, create_user, get_user_by_id
+from app.crud.user import get_all_users, create_user, get_user_by_id, get_user_by_usernames
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.user import UserCreate
@@ -27,4 +27,11 @@ async def get_some_user_by_id(session: Annotated[AsyncSession, Depends(db.sessio
                         user_id: int):
     users = await get_user_by_id(session=session, user_id=user_id)
     return users
+
+@router.get('/get_user_by_username')
+async def get_some_user_by_usernames(session: Annotated[AsyncSession, Depends(db.session_getter)],
+                        username:str ):
+    users = await get_user_by_usernames(session=session, username=username)
+    return users
+    
     

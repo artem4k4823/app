@@ -6,4 +6,8 @@ class BaseUser(BaseModel):
     
 class UserCreate(BaseUser):
     password:str
-    isAdmin: bool = False
+    
+    
+class UserAuth(BaseUser):
+    password:str
+    isAdmin:str
