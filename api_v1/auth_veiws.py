@@ -45,3 +45,7 @@ async def login( session:Annotated[AsyncSession,Depends(db.session_getter)], dat
         "access_token": access_token,
         "token_type": "bearer"
     }
+    
+@router.get('/me')
+async def Get_my_data():
+    pass
