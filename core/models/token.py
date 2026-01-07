@@ -9,4 +9,4 @@ class Token(Base):
     acces_token: Mapped[str] = mapped_column(unique=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'),unique=True, index=True)
     expire_at: Mapped[datetime]
-    user: Mapped['User'] = relationship('User',back_populates='tokens')
+    user: Mapped['User'] = relationship('User',back_populates='Token')

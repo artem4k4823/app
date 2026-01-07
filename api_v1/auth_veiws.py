@@ -3,8 +3,8 @@ from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import db
 from app.schemas.auth_shema import AuthUser
-from app.crud.user import get_user_by_usernames
-from app.core.auth_helper import verify_password, hash_password, create_jwt
+from app.crud.user import get_user_by_usernames, get_user_by_id
+from app.core.auth_helper import verify_password, hash_password, create_jwt, create_access_token
 from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter(prefix='/log', tags=['OAuth'])
@@ -19,6 +19,7 @@ async def aunthenticate_user(session: Annotated[AsyncSession, Depends(db.session
 @router.post('/token-login')
 async def login( session:Annotated[AsyncSession,Depends(db.session_getter)], data: OAuth2PasswordRequestForm = Depends(), ):
     user = await get_user_by_usernames(session=session,username=data.username)
+    user_id = user.id
     
     if not user:
         raise HTTPException(
@@ -39,7 +40,7 @@ async def login( session:Annotated[AsyncSession,Depends(db.session_getter)], dat
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Пользователь неактивен"
         )
-    access_token = create_jwt(data={"sub": user.username})
+    access_token = await create_access_token(session=session, user_id=user_id,user_data={"sub": user.username})
     
     return {
         "access_token": access_token,
