@@ -3,9 +3,12 @@ from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import db
 from app.schemas.auth_shema import AuthUser
-from app.crud.user import get_user_by_usernames, get_user_by_id
-from app.core.auth_helper import verify_password, hash_password, create_jwt, create_access_token
+from app.crud.user import get_user_by_usernames
+from app.core.auth_helper import verify_password,create_access_token
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import HTTPBearer 
+from app.core.models import User
+from app.crud.auth import get_current_user
 
 router = APIRouter(prefix='/log', tags=['OAuth'])
 
@@ -46,7 +49,15 @@ async def login( session:Annotated[AsyncSession,Depends(db.session_getter)], dat
         "access_token": access_token,
         "token_type": "bearer"
     }
-    
+http_bearer = HTTPBearer()
+
+
 @router.get('/me')
-async def Get_my_data():
-    pass
+async def get_my_data(
+    user: Annotated[User, Depends(get_current_user)],
+    
+):
+    return {
+        'username': user.username
+        
+    }

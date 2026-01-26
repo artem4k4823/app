@@ -11,3 +11,8 @@ class UserCreate(BaseUser):
 class UserAuth(BaseUser):
     password:str
     isAdmin:str
+    
+class UserMe(BaseUser):
+    password:str
+    token:str
+    

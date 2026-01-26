@@ -1,4 +1,3 @@
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
@@ -10,9 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from sqlalchemy import select
 from app.core.models.token import Token
+from jose import JWSError
 
 pwd_context = CryptContext(schemes=["bcrypt"], bcrypt__rounds=12,)
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 
 if not settings.SECRET_KEY:
     raise ValueError('No secret key')
@@ -29,11 +29,25 @@ def create_jwt(data:dict) -> str:
     to_encode.update({'exp':expire})
     return jwt.encode(to_encode, str(settings.SECRET_KEY), algorithm=str(settings.ALGORITHM))
 
-def decode_jwt(token:TokenSchema) -> dict:
+def decode_jwt(token:str) -> dict:
     try:
-        return jwt.decode(token, str(settings.SECRET_KEY), str)
-    except:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,  
+            algorithms=[settings.ALGORITHM]  
+        )
+        
+        
+        return payload
+        
+    except JWSError as e:
+        print(f"JWT decode error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Invalid token: {str(e)}"
+        )
+    
     
 
 
@@ -43,7 +57,6 @@ async def get_token(session: AsyncSession, user_id: int) -> Token | None:
     result = await session.execute(stmt)
     token = result.scalar_one_or_none()
     return token
-    
     
 async def create_access_token(
     session: AsyncSession, 
@@ -95,4 +108,5 @@ async def create_access_token(
         "expires_at": expire_at.isoformat(),
         
     }
-        
+    
+    
