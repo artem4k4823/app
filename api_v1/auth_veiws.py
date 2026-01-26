@@ -9,15 +9,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.security import HTTPBearer 
 from app.core.models import User
 from app.crud.auth import get_current_user
+from typing import Tuple
 
 router = APIRouter(prefix='/log', tags=['OAuth'])
 
-@router.post('/login')
-async def aunthenticate_user(session: Annotated[AsyncSession, Depends(db.session_getter)], user: AuthUser):
-    db_user = await get_user_by_usernames(session=session, username=user.username,)
-    if not user or not verify_password(user.password, db_user.password):
-        return False
-    return user
+
 
 @router.post('/token-login')
 async def login( session:Annotated[AsyncSession,Depends(db.session_getter)], data: OAuth2PasswordRequestForm = Depends(), ):
@@ -54,8 +50,9 @@ http_bearer = HTTPBearer()
 
 @router.get('/me')
 async def get_my_data(
-    user: Annotated[User, Depends(get_current_user)],
+    deps: Tuple[User, AsyncSession] = Depends(get_current_user),
 ):
+    user, session = deps
     return {
         'id': user.id,
         'username': user.username,

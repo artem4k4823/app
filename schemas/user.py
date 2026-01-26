@@ -18,3 +18,6 @@ class UserMe(BaseUser):
     password:str
     token:str
     
+class UserResponse(BaseModel):
+    id: int
+    username: str
