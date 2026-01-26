@@ -10,3 +10,4 @@ class User(Base):
     status: Mapped[bool] = mapped_column(default=True)
     isAdmin: Mapped[bool] = mapped_column(default=False)
     Token: Mapped[str] = relationship('Token',back_populates='user')
+    post: Mapped[str] = relationship('Post',back_populates='users')
