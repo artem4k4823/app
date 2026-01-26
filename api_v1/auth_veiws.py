@@ -55,9 +55,10 @@ http_bearer = HTTPBearer()
 @router.get('/me')
 async def get_my_data(
     user: Annotated[User, Depends(get_current_user)],
-    
 ):
     return {
-        'username': user.username
-        
+        'id': user.id,
+        'username': user.username,
+        'status': user.status,
+        'isAdmin': user.isAdmin
     }

@@ -2,8 +2,6 @@ from jose import jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from .config import settings
-from app.schemas.token import TokenSchema
-from app.schemas.user import UserAuth
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
@@ -48,8 +46,6 @@ def decode_jwt(token:str) -> dict:
             detail=f"Invalid token: {str(e)}"
         )
     
-    
-
 
 async def get_token(session: AsyncSession, user_id: int) -> Token | None:
    

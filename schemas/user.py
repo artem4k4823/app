@@ -7,6 +7,8 @@ class BaseUser(BaseModel):
 class UserCreate(BaseUser):
     password:str
     
+class UserDelete(BaseUser):
+    password:str
     
 class UserAuth(BaseUser):
     password:str

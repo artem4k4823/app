@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from app.core.database import db
-from app.crud.user import get_all_users, create_user, get_user_by_id, get_user_by_usernames
+from app.crud.user import get_all_users, create_user, get_user_by_id, get_user_by_usernames, delete_user
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.user import UserCreate
@@ -22,6 +22,11 @@ async def create_users(
     users = await create_user(session=session,user_create=user_create)
     return users
 
+@router.delete('/delete_user')
+async def delete_user_by_id(session: Annotated[AsyncSession, Depends(db.session_getter)], user_id: int):
+    await delete_user(session=session, user_id=user_id)
+    return f'user with id: {user_id} was deleted'
+
 @router.get('/get_user_by_id')
 async def get_some_user_by_id(session: Annotated[AsyncSession, Depends(db.session_getter)],
                         user_id: int):
@@ -33,5 +38,4 @@ async def get_some_user_by_usernames(session: Annotated[AsyncSession, Depends(db
                         username:str ):
     users = await get_user_by_usernames(session=session, username=username)
     return users
-    
     
