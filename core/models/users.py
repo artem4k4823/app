@@ -9,5 +9,5 @@ class User(Base):
     password: Mapped[str] = mapped_column(nullable=False)
     status: Mapped[bool] = mapped_column(default=True)
     isAdmin: Mapped[bool] = mapped_column(default=False)
-    Token: Mapped[str] = relationship('Token',back_populates='user')
+    Token: Mapped[str] = relationship('Token',back_populates='user', foreign_keys='Token.user_id')
     post: Mapped[str] = relationship('Post',back_populates='users')

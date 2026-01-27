@@ -8,5 +8,5 @@ class Post(Base):
     title: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str] = mapped_column(nullable=False)
     user: Mapped[str] = mapped_column(ForeignKey(User.username, ondelete='CASCADE'))
-    users: Mapped[str] = relationship('users', back_populates='post')
+    users: Mapped[str] = relationship('User', back_populates='post')
     
