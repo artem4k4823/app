@@ -22,3 +22,18 @@ async def create_some_post(session:AsyncSession, post: PostSchema, username:str)
     session.add(db_post)
     await session.commit()
     return db_post
+
+async def get_some_post_by_id(session:AsyncSession, post_id:int):
+    stmt = select(Post).where(Post.id == post_id)
+    result = await session.execute(stmt)
+    post = result.scalar_one_or_none()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return post
+
+
+
+async def delete_some_post(session:AsyncSession, post_id: int):
+    stmt = delete(Post).where(Post.id == post_id)
+    await session.execute(stmt)
+    

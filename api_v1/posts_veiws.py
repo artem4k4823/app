@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import db
 from app.core.models import User
 from app.crud.auth import get_current_user
-from app.crud.posts import get_all_posts, create_some_post
+from app.crud.posts import get_all_posts, create_some_post, get_some_post_by_id, delete_some_post
 from app.schemas.posts import PostSchema
 from typing import Tuple
 
@@ -27,5 +27,15 @@ async def create_post(post:PostSchema,deps:Tuple[User,AsyncSession] = Depends(ge
     post = await create_some_post(session=session, post=post, username=username)
     return post
     
+@router.delete('/delete-post')
+async def delete_post(post_id: int, deps: Tuple[User, AsyncSession] = Depends(get_current_user)):
+    user,session = deps
+    post = await get_some_post_by_id(session=session, post_id=post_id)
+    if (post.user == user.username or user.isAdmin == True) and user.status == True:
+        await delete_some_post(session=session,post_id=post_id)
+        return f'post was deleted by {user.username}'
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='you dont have permision for what')
+        
     
     
