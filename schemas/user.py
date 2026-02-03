@@ -21,3 +21,4 @@ class UserMe(BaseUser):
 class UserResponse(BaseModel):
     id: int
     username: str
+    

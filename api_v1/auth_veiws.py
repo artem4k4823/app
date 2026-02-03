@@ -57,5 +57,6 @@ async def get_my_data(
         'id': user.id,
         'username': user.username,
         'status': user.status,
-        'isAdmin': user.isAdmin
+        'isAdmin': user.isAdmin,
+        'favorite_posts': user.favorite_posts_ids
     }

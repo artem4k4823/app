@@ -7,6 +7,8 @@ from app.crud.auth import get_current_user
 from app.crud.posts import get_all_posts, create_some_post, get_some_post_by_id, delete_some_post
 from app.schemas.posts import PostSchema
 from typing import Tuple
+from app.core.models.posts import Post
+from sqlalchemy import select
 
 router = APIRouter(prefix='/post', tags= ['posts'])
 
@@ -38,4 +40,42 @@ async def delete_post(post_id: int, deps: Tuple[User, AsyncSession] = Depends(ge
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='you dont have permision for what')
         
     
+@router.post('/add-favorite-post')
+async def add_favorite_post(post_id: int, deps: Tuple[User,AsyncSession] = Depends(get_current_user)):
+    user, session = deps
+    if user.favorite_posts_ids is None:
+        user.favorite_posts_ids = []
+    if post_id not in user.favorite_posts_ids:
+        user.favorite_posts_ids.append(post_id)
+        await session.commit()
+        return 'post was added'
+    return {"status": "added", "post_id": post_id}
+
+@router.post('/remove-favorite-post')
+async def add_favorite_post(post_id: int, deps: Tuple[User,AsyncSession] = Depends(get_current_user)):
+    user, session = deps
+    if user.favorite_posts_ids is None:
+        user.favorite_posts_ids = []
+    if post_id in user.favorite_posts_ids:
+        user.favorite_posts_ids.remove(post_id)
+        await session.commit()
+        return 'post was removed'
+    return 'you dont have this post in favorite'
+
+@router.get('/get-favorite-posts')
+async def get_favorite_posts(
+    deps: Tuple[User, AsyncSession] = Depends(get_current_user)
+):
+    """Получить все избранные посты пользователя"""
+    user, session = deps
     
+    if not user.favorite_posts_ids:
+        return []
+    
+    # Получаем посты по ID
+    result = await session.execute(
+        select(Post).where(Post.id == user.favorite_posts_ids)
+    )
+    posts = result.scalars().all()
+    
+    return posts

@@ -9,6 +9,8 @@ from app.crud.auth import get_current_user
 from app.schemas.posts import PostSchema
 from app.core.models import Post
 
+
+
 async def get_all_posts(session: AsyncSession):
     stmt = select(Post).order_by(Post.id)
     result = await session.scalars(stmt)
@@ -36,4 +38,13 @@ async def get_some_post_by_id(session:AsyncSession, post_id:int):
 async def delete_some_post(session:AsyncSession, post_id: int):
     stmt = delete(Post).where(Post.id == post_id)
     await session.execute(stmt)
+
     
+# def add_favorite_post(user: UserAddFavorite, post_id: int):
+#     if post_id not in user.favorite_posts_ids:
+#         user.favorite_posts_ids.append(post_id)
+        
+# def remove_favorite_post(user: UserAddFavorite, post_id: int):
+#     if post_id in user.favorite_posts_ids:
+#         user.favorite_posts_ids.remove(post_id)
+        
