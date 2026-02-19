@@ -52,7 +52,7 @@ async def add_favorite_post(post_id: int, deps: Tuple[User,AsyncSession] = Depen
     return {"status": "added", "post_id": post_id}
 
 @router.post('/remove-favorite-post')
-async def add_favorite_post(post_id: int, deps: Tuple[User,AsyncSession] = Depends(get_current_user)):
+async def remove_favorite_post(post_id: int, deps: Tuple[User,AsyncSession] = Depends(get_current_user)):
     user, session = deps
     if user.favorite_posts_ids is None:
         user.favorite_posts_ids = []
@@ -66,15 +66,14 @@ async def add_favorite_post(post_id: int, deps: Tuple[User,AsyncSession] = Depen
 async def get_favorite_posts(
     deps: Tuple[User, AsyncSession] = Depends(get_current_user)
 ):
-    """Получить все избранные посты пользователя"""
+    
     user, session = deps
     
     if not user.favorite_posts_ids:
-        return []
+        return [] 
     
-    # Получаем посты по ID
     result = await session.execute(
-        select(Post).where(Post.id == user.favorite_posts_ids)
+        select(Post).where(Post.id.in_(user.favorite_posts_ids))
     )
     posts = result.scalars().all()
     

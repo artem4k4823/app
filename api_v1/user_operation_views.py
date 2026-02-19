@@ -49,11 +49,6 @@ async def get_some_user_by_id(
     deps: Tuple[User, AsyncSession] = Depends(get_current_user)
 ):
     user, session = deps
-    if not user.isAdmin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, 
-            detail='You are not admin'
-        )
     
     found_user = await get_user_by_id(session=session, user_id=user_id)
     return found_user
@@ -61,11 +56,6 @@ async def get_some_user_by_id(
 @router.get('/get_user_by_username')
 async def get_some_user_by_usernames(username:str ,deps: Tuple[User, AsyncSession] = Depends(get_current_user)):
     user, session = deps
-    if user.isAdmin == True:
-        
-        users = await get_user_by_usernames(session=session, username=username)
-        return users
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail='Your are not admin'
-    )    
+    users = await get_user_by_usernames(session=session, username=username)
+    return users
+    

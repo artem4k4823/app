@@ -20,13 +20,14 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
     await websocket.accept()
     active_connections[user_id] = websocket
     
+    
     try:
         while True:
-            # Ждем сообщение от клиента
+            
             data = await websocket.receive_text()
             message_data = json.loads(data)
             
-            # Отправляем сообщение получателю
+            
             receiver_id = message_data.get("receiver_id")
             if receiver_id in active_connections:
                 await active_connections[receiver_id].send_text(json.dumps({
@@ -93,3 +94,34 @@ async def mark_as_read(message_id: int, session: Annotated[AsyncSession, Depends
     await session.commit()
     
     return {"status": "message marked as read"}
+
+
+@router.get("/unread/{user_id}/")
+async def get_some_unread_messages(deps: Tuple[User, AsyncSession] = Depends(get_current_user)):
+    user, session = deps
+    stmt = select(Message).where(and_(Message.receiver_id == user.id, Message.is_read == 0))
+    result = await session.execute(stmt)
+    unread_messages = result.scalars().all()
+    return unread_messages
+
+
+@router.get('/all-your-chats')
+async def get_all_my_chats(deps: Tuple[User, AsyncSession] = Depends(get_current_user)):
+    user, session = deps
+    stmt = select(Message).where(or_(Message.sender_id == user.id, Message.receiver_id == user.id)).order_by(Message.created_at.desc())
+    result = await session.execute(stmt)
+    messages = result.scalars().all()
+    if not user.chats:
+        user.chats = []
+    for message in messages:
+        if message.sender_id == user.id:
+            chat_partner_id = message.receiver_id
+        else:
+            chat_partner_id = message.sender_id
+        
+        if chat_partner_id not in user.chats:
+            user.chats.append(chat_partner_id)
+            await session.commit()
+    
+    return user.chats
+

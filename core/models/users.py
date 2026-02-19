@@ -21,6 +21,11 @@ class User(Base):
         default=list,
         nullable=True
     )
+    chats: Mapped[Optional[List[int]]] = mapped_column(
+        MutableList.as_mutable(JSONB),
+        default=list,
+        nullable=True
+    )
     messages_sent: Mapped[List["Message"]] = relationship(
         "Message",
         foreign_keys="Message.sender_id",
