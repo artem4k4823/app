@@ -1,7 +1,7 @@
 from app.core.models import User
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.schemas.user import UserCreate, UserDelete
+from app.schemas.user import UserCreate, UserDelete, UserSchema
 from app.core.auth_helper import hash_password, verify_password
 from fastapi import HTTPException, status
 from app.core.auth_helper import decode_jwt
@@ -64,3 +64,8 @@ async def get_authenticate_user_data(session:AsyncSession, token:str ):
         raise credentionals_exeption
     return user
 
+
+def chek_user(session: AsyncSession, user: UserSchema):
+    if user.status == 0:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is blocked")
+    return user

@@ -4,6 +4,11 @@ from pydantic import BaseModel
 class BaseUser(BaseModel):
     username:str
     
+class UserSchema(BaseUser):
+    isAdmin: bool
+    status: int
+    
+
 class UserCreate(BaseUser):
     password:str
     

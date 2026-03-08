@@ -7,6 +7,7 @@ from app.core.database import db
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import Depends
 from typing import Annotated
+from app.crud.user import chek_user
 
 
 http_bearer = HTTPBearer()
@@ -30,5 +31,7 @@ async def get_current_user(
     
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
+    user = chek_user(session=session, user=user)
+    
     
     return user, session

@@ -9,17 +9,18 @@ from app.core.models.users import User, Message
 from app.crud.auth import get_current_user
 from typing import Tuple, Annotated
 from app.crud.user import get_user_by_id
+from app.crud.user import chek_user
 
 
 router = APIRouter(prefix='/chat', tags=['Chat'])
 
-active_connections ={}
+
+active_connections = {}
 
 @router.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: int):
     await websocket.accept()
     active_connections[user_id] = websocket
-    
     
     try:
         while True:
@@ -28,14 +29,55 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
             message_data = json.loads(data)
             
             
-            receiver_id = message_data.get("receiver_id")
-            if receiver_id in active_connections:
-                await active_connections[receiver_id].send_text(json.dumps({
-                    "sender_id": user_id,
-                    "content": message_data["content"]
-                }))
+            event_type = message_data.get("type", "message")
+            
+            
+            if event_type in ["message", "chat_message"]:
+                
+                receiver_id = message_data.get("receiver_id")
+                if receiver_id in active_connections:
+                    await active_connections[receiver_id].send_text(json.dumps({
+                        "type": "chat_message",
+                        "sender_id": user_id,
+                        "content": message_data["content"]
+                    }))
+            
+            elif event_type == "ping":
+                
+                await websocket.send_text(json.dumps({"type": "pong"}))
+            
+            else:
+                
+                await broadcast_to_all(message_data, exclude_user=user_id)
+    
     except WebSocketDisconnect:
-        del active_connections[user_id]
+        
+        if user_id in active_connections:
+            del active_connections[user_id]
+        print(f"User {user_id} disconnected")
+
+
+async def broadcast_to_all(data: dict, exclude_user: int = None):
+ 
+    disconnected = []
+    
+    for user_id, connection in active_connections.items():
+        
+        if user_id == exclude_user:
+            continue
+        
+        try:
+            await connection.send_text(json.dumps(data))
+            print(f"✅ Sent to user {user_id}: {data.get('type')}")
+        except:
+            
+            disconnected.append(user_id)
+            print(f"❌ Failed to send to user {user_id}")
+    
+    
+    for user_id in disconnected:
+        if user_id in active_connections:
+            del active_connections[user_id]
 
 @router.post('/send-message')
 async def send_message(message: MessageCreate, deps: Tuple[User, AsyncSession] = Depends(get_current_user)):
@@ -43,6 +85,8 @@ async def send_message(message: MessageCreate, deps: Tuple[User, AsyncSession] =
     receiver = get_user_by_id(session=session, user_id=message.receiver_id)
     if not receiver:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    if len(message.content) > 200:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Message content is too long")
     db_message =Message(
         sender_id = user.id,
         receiver_id = message.receiver_id,
@@ -124,4 +168,7 @@ async def get_all_my_chats(deps: Tuple[User, AsyncSession] = Depends(get_current
             await session.commit()
     
     return user.chats
+
+
+
 

@@ -55,7 +55,34 @@ async def get_some_user_by_id(
 
 @router.get('/get_user_by_username')
 async def get_some_user_by_usernames(username:str ,deps: Tuple[User, AsyncSession] = Depends(get_current_user)):
-    user, session = deps
+    session = deps
     users = await get_user_by_usernames(session=session, username=username)
     return users
     
+@router.patch('/ban_user')
+async def ban_user_by_id(user_id: int, deps: Tuple[User, AsyncSession] = Depends(get_current_user)):
+    user, session = deps
+    if user.isAdmin and user.status == True and user_id != user.id:
+        found_user = await get_user_by_id(session=session, user_id=user_id)
+        if found_user:
+            found_user.status = False
+            await session.commit()
+            return f'user with id: {user_id} was banned'
+        else:
+            return f'user with id: {user_id} not found'
+    else:
+        return HTTPException(status_code=403, detail="Admin access required ")
+    
+@router.patch('/unban_user')
+async def unban_user_by_id(user_id: int, deps: Tuple[User, AsyncSession] = Depends(get_current_user)):
+    user, session = deps
+    if user.isAdmin and user.status == True and user_id != user.id:
+        found_user = await get_user_by_id(session=session, user_id=user_id)
+        if found_user:
+            found_user.status = True
+            await session.commit()
+            return f'user with id: {user_id} was unbanned'
+        else:
+            return f'user with id: {user_id} not found'
+    else:
+        return HTTPException(status_code=403, detail="Admin access required ")

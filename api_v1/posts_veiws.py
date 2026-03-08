@@ -9,6 +9,7 @@ from app.schemas.posts import PostSchema
 from typing import Tuple
 from app.core.models.posts import Post
 from sqlalchemy import select
+from app.crud.user import chek_user
 
 router = APIRouter(prefix='/post', tags= ['posts'])
 
