@@ -3,13 +3,15 @@ from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.user import UserCreate, UserDelete, UserSchema
 from app.core.auth_helper import hash_password, verify_password
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, UploadFile
 from app.core.auth_helper import decode_jwt
 from app.core.database import db
 from jose import JWTError
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import Depends
-from typing import Annotated
+from typing import Annotated, Optional
+import os
+import shutil
 
 http_bearer = HTTPBearer()
 
@@ -19,11 +21,30 @@ async def get_all_users(session:AsyncSession):
     return result.all()
 
 async def create_user(session: AsyncSession, user_create:UserCreate):
-    user = User(**user_create.model_dump())
+    
+    avatar_path = None
+    if user_create.avatar:
+        upload_dir = "app/static/avatars"
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        
+        file_extension = user_create.avatar.filename.split('.')[-1]
+        file_name = f"{user_create.username}_avatar.{file_extension}"
+        file_path = os.path.join(upload_dir, file_name)
+        
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(user_create.avatar.file, buffer)
+            
+        avatar_path = f"/static/avatars/{file_name}"
+
+    user_data = user_create.model_dump(exclude={'avatar'})
+    user = User(**user_data)
     password = hash_password(user_create.password)
     user.password = password
+    user.avatar = avatar_path
     session.add(user)
     await session.commit()
+    await session.refresh(user)
     return user
 
 async def delete_user(session: AsyncSession, user_id:int):

@@ -63,19 +63,31 @@ async def remove_favorite_post(post_id: int, deps: Tuple[User,AsyncSession] = De
         return 'post was removed'
     return 'you dont have this post in favorite'
 
+from sqlalchemy.orm import selectinload
+
 @router.get('/get-favorite-posts')
 async def get_favorite_posts(
     deps: Tuple[User, AsyncSession] = Depends(get_current_user)
 ):
-    
     user, session = deps
-    
     if not user.favorite_posts_ids:
         return [] 
     
     result = await session.execute(
-        select(Post).where(Post.id.in_(user.favorite_posts_ids))
+        select(Post).options(selectinload(Post.users)).where(Post.id.in_(user.favorite_posts_ids))
     )
     posts = result.scalars().all()
     
-    return posts
+    response_posts = []
+    for post in posts:
+        p_dict = {
+            "id": post.id,
+            "title": post.title,
+            "description": post.description,
+            "user": post.user,
+            "user_display_name": post.users.displayName if post.users else post.user,
+            "user_avatar": post.users.avatar if post.users else None
+        }
+        response_posts.append(p_dict)
+        
+    return response_posts

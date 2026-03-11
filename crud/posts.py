@@ -11,11 +11,27 @@ from app.core.models import Post
 
 
 
+from sqlalchemy.orm import selectinload
+
 async def get_all_posts(session: AsyncSession):
-    stmt = select(Post).order_by(Post.id)
-    result = await session.scalars(stmt)
-    posts = result.all()
-    return posts
+    stmt = select(Post).options(selectinload(Post.users)).order_by(Post.id.desc())
+    result = await session.execute(stmt)
+    posts = result.scalars().all()
+    
+    response_posts = []
+    for post in posts:
+        # Construct response objects with user details
+        p_dict = {
+            "id": post.id,
+            "title": post.title,
+            "description": post.description,
+            "user": post.user, # username
+            "user_display_name": post.users.displayName if post.users else post.user,
+            "user_avatar": post.users.avatar if post.users else None
+        }
+        response_posts.append(p_dict)
+        
+    return response_posts
     
 async def create_some_post(session:AsyncSession, post: PostSchema, username:str):
     post_data = post.model_dump()

@@ -29,13 +29,11 @@ def create_jwt(data:dict) -> str:
 
 def decode_jwt(token:str) -> dict:
     try:
-        
         payload = jwt.decode(
             token,
             settings.SECRET_KEY,  
             algorithms=[settings.ALGORITHM]  
         )
-        
         
         return payload
         

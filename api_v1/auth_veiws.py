@@ -1,3 +1,6 @@
+from fastapi import UploadFile
+from sqlalchemy import select
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +13,7 @@ from fastapi.security import HTTPBearer
 from app.core.models import User
 from app.crud.auth import get_current_user
 from typing import Tuple
+from app.core.utils import avatar_saver
 
 router = APIRouter(prefix='/log', tags=['OAuth'])
 
@@ -56,7 +60,27 @@ async def get_my_data(
     return {
         'id': user.id,
         'username': user.username,
+        'displayName': user.displayName,
         'status': user.status,
         'isAdmin': user.isAdmin,
-        'favorite_posts': user.favorite_posts_ids
+        'favorite_posts': user.favorite_posts_ids,
+        'avatar': user.avatar
     }
+    
+@router.patch('/me/settings')
+async def change_data(
+    username: Optional[str] = None,
+    displayName: Optional[str] = None,
+    avatar: Optional[UploadFile] = None,
+    deps: Tuple[User, AsyncSession] = Depends(get_current_user)
+):
+    user, session = deps
+    if user:
+        user.username = username if username else user.username
+        user.displayName = displayName if displayName else user.displayName
+        
+        if avatar:
+            avatar = avatar_saver(avatar=avatar, user=user)
+            
+        await session.commit()
+        return 'data was changed'

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-
+from fastapi import UploadFile
+from typing import Optional
 
 class BaseUser(BaseModel):
     username:str
@@ -10,6 +11,8 @@ class UserSchema(BaseUser):
     
 
 class UserCreate(BaseUser):
+    displayName: str
+    avatar: Optional[UploadFile] = None
     password:str
     
 class UserDelete(BaseUser):
@@ -26,4 +29,9 @@ class UserMe(BaseUser):
 class UserResponse(BaseModel):
     id: int
     username: str
+    displayName: str
+    avatar: Optional[str] = None
+
+    class Config:
+        from_attributes = True
     

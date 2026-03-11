@@ -10,6 +10,7 @@ from app.crud.auth import get_current_user
 from typing import Tuple, Annotated
 from app.crud.user import get_user_by_id
 from app.crud.user import chek_user
+from app.schemas.user import UserResponse
 
 
 router = APIRouter(prefix='/chat', tags=['Chat'])
@@ -149,26 +150,26 @@ async def get_some_unread_messages(deps: Tuple[User, AsyncSession] = Depends(get
     return unread_messages
 
 
-@router.get('/all-your-chats')
+@router.get('/all-your-chats', response_model=List[UserResponse])
 async def get_all_my_chats(deps: Tuple[User, AsyncSession] = Depends(get_current_user)):
     user, session = deps
     stmt = select(Message).where(or_(Message.sender_id == user.id, Message.receiver_id == user.id)).order_by(Message.created_at.desc())
     result = await session.execute(stmt)
     messages = result.scalars().all()
-    if not user.chats:
-        user.chats = []
+    
+    chat_partner_ids = []
     for message in messages:
         if message.sender_id == user.id:
             chat_partner_id = message.receiver_id
         else:
             chat_partner_id = message.sender_id
         
-        if chat_partner_id not in user.chats:
-            user.chats.append(chat_partner_id)
-            await session.commit()
+        if chat_partner_id not in chat_partner_ids:
+            chat_partner_ids.append(chat_partner_id)
+            
+    if chat_partner_ids:
+        stmt = select(User).where(User.id.in_(chat_partner_ids))
+        result = await session.execute(stmt)
+        return result.scalars().all()
     
-    return user.chats
-
-
-
-
+    return []
