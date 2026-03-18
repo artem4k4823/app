@@ -14,7 +14,6 @@ from app.core.models import User
 from app.crud.auth import get_current_user
 from typing import Tuple
 from app.core.utils import avatar_saver
-
 router = APIRouter(prefix='/log', tags=['OAuth'])
 
 

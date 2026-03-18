@@ -20,12 +20,12 @@ async def get_all_posts(session: AsyncSession):
     
     response_posts = []
     for post in posts:
-        # Construct response objects with user details
+        
         p_dict = {
             "id": post.id,
             "title": post.title,
             "description": post.description,
-            "user": post.user, # username
+            "user": post.user, 
             "user_display_name": post.users.displayName if post.users else post.user,
             "user_avatar": post.users.avatar if post.users else None
         }

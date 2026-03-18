@@ -59,8 +59,7 @@ async def get_some_user_by_id(
     return found_user
 
 @router.get('/get_user_by_username', response_model=UserResponse)
-async def get_some_user_by_usernames(username:str ,deps: Tuple[User, AsyncSession] = Depends(get_current_user)):
-    session = deps
+async def get_some_user_by_usernames(username:str ,session: Annotated[AsyncSession, Depends(db.session_getter)]):
     users = await get_user_by_usernames(session=session, username=username)
     return users
     

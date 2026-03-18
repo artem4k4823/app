@@ -3,13 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from sqlalchemy import select, and_, or_
 import json
-from app.schemas.message import MessageCreate
+from app.schemas.message import MessageCreate, MessageResponse
 from app.core.database import db
 from app.core.models.users import User, Message
 from app.crud.auth import get_current_user
 from typing import Tuple, Annotated
 from app.crud.user import get_user_by_id
-from app.crud.user import chek_user
 from app.schemas.user import UserResponse
 
 
@@ -80,10 +79,10 @@ async def broadcast_to_all(data: dict, exclude_user: int = None):
         if user_id in active_connections:
             del active_connections[user_id]
 
-@router.post('/send-message')
+@router.post('/send-message', response_model=MessageResponse)
 async def send_message(message: MessageCreate, deps: Tuple[User, AsyncSession] = Depends(get_current_user)):
     user, session = deps
-    receiver = get_user_by_id(session=session, user_id=message.receiver_id)
+    receiver = await get_user_by_id(session=session, user_id=message.receiver_id)
     if not receiver:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     if len(message.content) > 200:
@@ -96,9 +95,10 @@ async def send_message(message: MessageCreate, deps: Tuple[User, AsyncSession] =
     )
     session.add(db_message)
     await session.commit()
+    await session.refresh(db_message)
     return db_message
 
-@router.get("/history/{user1_id}/{user2_id}/")
+@router.get("/history/{user1_id}/{user2_id}/", response_model=List[MessageResponse])
 async def get_chat_history(
     user1_id: int,
     user2_id: int,

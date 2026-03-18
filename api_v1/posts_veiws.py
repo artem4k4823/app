@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import db
 from app.core.models import User
@@ -9,7 +8,6 @@ from app.schemas.posts import PostSchema
 from typing import Tuple
 from app.core.models.posts import Post
 from sqlalchemy import select
-from app.crud.user import chek_user
 
 router = APIRouter(prefix='/post', tags= ['posts'])
 
@@ -48,6 +46,8 @@ async def add_favorite_post(post_id: int, deps: Tuple[User,AsyncSession] = Depen
         user.favorite_posts_ids = []
     if post_id not in user.favorite_posts_ids:
         user.favorite_posts_ids.append(post_id)
+        post = await get_some_post_by_id(session=session, post_id=post_id)
+        post.likes += 1
         await session.commit()
         return 'post was added'
     return {"status": "added", "post_id": post_id}

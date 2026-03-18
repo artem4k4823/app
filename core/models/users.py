@@ -12,6 +12,8 @@ class User(Base):
     __tablename__ = 'users'
     username: Mapped[str] = mapped_column(nullable=False, unique=True)
     displayName: Mapped[str] = mapped_column(nullable=False, unique=False)
+    email: Mapped[str] = mapped_column(nullable=True, unique=True)
+    is_verified: Mapped[bool] = mapped_column(default=False)
     password: Mapped[str] = mapped_column(nullable=False)
     status: Mapped[bool] = mapped_column(default=True)
     isAdmin: Mapped[bool] = mapped_column(default=False)
