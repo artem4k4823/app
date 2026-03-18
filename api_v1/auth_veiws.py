@@ -63,7 +63,8 @@ async def get_my_data(
         'status': user.status,
         'isAdmin': user.isAdmin,
         'favorite_posts': user.favorite_posts_ids,
-        'avatar': user.avatar
+        'avatar': user.avatar,
+        # 'comments': user.coment
     }
     
 @router.patch('/me/settings')

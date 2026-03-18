@@ -13,13 +13,14 @@ class User(Base):
     username: Mapped[str] = mapped_column(nullable=False, unique=True)
     displayName: Mapped[str] = mapped_column(nullable=False, unique=False)
     email: Mapped[str] = mapped_column(nullable=True, unique=True)
-    is_verified: Mapped[bool] = mapped_column(default=False)
+    # is_verified: Mapped[bool] = mapped_column(default=False)
     password: Mapped[str] = mapped_column(nullable=False)
     status: Mapped[bool] = mapped_column(default=True)
     isAdmin: Mapped[bool] = mapped_column(default=False)
     Token: Mapped[str] = relationship('Token',back_populates='user', foreign_keys='Token.user_id')
     post: Mapped[str] = relationship('Post',back_populates='users')
     avatar: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    coment: Mapped[str] = relationship('Coment',back_populates = 'users')
 
 
     
