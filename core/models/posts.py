@@ -14,7 +14,7 @@ class Post(Base):
     likes: Mapped[int] = mapped_column(default = 1)
     user: Mapped[str] = mapped_column(ForeignKey(User.username, ondelete='CASCADE', onupdate='CASCADE'))
     users: Mapped[str] = relationship('User', back_populates='post')
-    comment:Mapped[str] = relationship('Coment',back_populates='posts')
+    comment: Mapped[list["Coment"]] = relationship('Coment', back_populates='posts')
     coments: Mapped[Optional[List[int]]] = mapped_column(
         MutableList.as_mutable(JSONB),
         default=[],

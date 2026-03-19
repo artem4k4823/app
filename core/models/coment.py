@@ -9,5 +9,5 @@ class Coment(Base):
     content: Mapped[str] = mapped_column(nullable=False)
     user: Mapped[str] = mapped_column(ForeignKey(User.username, ondelete='CASCADE', onupdate='CASCADE'))
     post: Mapped[int] = mapped_column(ForeignKey(Post.id, ondelete='CASCADE', onupdate='CASCADE'))
-    users: Mapped[str] = relationship('User', back_populates='coment')
-    posts: Mapped[int] = relationship('Post', back_populates='comment')
+    users: Mapped["User"] = relationship('User', back_populates='coment')
+    posts: Mapped["Post"] = relationship('Post', back_populates='comment')

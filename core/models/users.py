@@ -20,7 +20,7 @@ class User(Base):
     Token: Mapped[str] = relationship('Token',back_populates='user', foreign_keys='Token.user_id')
     post: Mapped[str] = relationship('Post',back_populates='users')
     avatar: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    coment: Mapped[str] = relationship('Coment',back_populates = 'users')
+    coment: Mapped[list["Coment"]] = relationship('Coment', back_populates='users')
 
 
     
