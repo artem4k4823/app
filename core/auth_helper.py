@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from sqlalchemy import select
 from app.core.models.token import Token
-from jose import JWSError
+from jose import JWSError, JWTError
 
 pwd_context = CryptContext(schemes=["bcrypt"], bcrypt__rounds=12,)
 
@@ -37,7 +37,7 @@ def decode_jwt(token:str) -> dict:
         
         return payload
         
-    except JWSError as e:
+    except (JWSError, JWTError) as e:
         print(f"JWT decode error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

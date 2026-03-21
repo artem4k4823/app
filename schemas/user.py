@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from fastapi import UploadFile
 from typing import Optional
 
 class BaseUser(BaseModel):
-    username:str
+    username:str = Field(...,min_length=3,max_length=20)
     
 class UserSchema(BaseUser):
     isAdmin: bool
@@ -11,9 +11,9 @@ class UserSchema(BaseUser):
     
 
 class UserCreate(BaseUser):
-    displayName: str
+    displayName: str = Field(...,min_length=3,max_length=20)
     avatar: Optional[UploadFile] = None
-    password:str
+    password:str = Field(...,min_length=3,max_length=40)
     
 class UserDelete(BaseUser):
     password:str

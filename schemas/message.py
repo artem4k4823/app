@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from datetime import datetime
 
 
 class MessageBase(BaseModel):
-    content: str
+    content: str = Field(...,min_length=1,max_length=500)
     receiver_id: int
     
 class MessageCreate(MessageBase):
